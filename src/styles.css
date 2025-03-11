@@ -1,1 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+button:hover {
+    opacity: 0.9;
+  }
+  
+  .card {
+    border-radius: 10px;
+  }
+  
+  .form-control {
+    border-radius: 8px;
+  }
+  
+  pre {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
