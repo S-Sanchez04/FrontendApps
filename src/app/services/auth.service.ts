@@ -1,18 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../environments/environment'; 
+import { catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private router: Router) {}
 
   register(user: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/auth/register`, user);
+    return this.http.post(`${this.apiUrl}/auth/register`, user)
+      .pipe(
+        catchError(error => {
+          if (error.status === 409) {
+            console.error('El email ya está registrado');
+          } else {
+            console.error('Error en el registro:', error);
+          }
+          return throwError(() => error);
+        })
+      );
   }
 
   login(credentials: any): Observable<any> {
