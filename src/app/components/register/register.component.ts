@@ -19,35 +19,60 @@ export class RegisterComponent {
     password: ''
   };
   
-  errorMessage: string = '';
-  successMessage: string = '';
+  firstnameError: string = '';
+  lastnameError: string = '';
+  emailError: string = '';
+  passwordError: string = '';
+
   isSubmitting: boolean = false;
 
   constructor(private authService: AuthService) {}
 
+  // 🔹 Validación de email con regex
+  isValidEmail(email: string): boolean {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  }
+
+  // 🔹 Validación de nombres con mínimo 5 caracteres
+  isValidName(name: string): boolean {
+    return name.length >= 5;
+  }
+
   register() {
-    this.errorMessage = '';
-    this.successMessage = '';
+    this.firstnameError = '';
+    this.lastnameError = '';
+    this.emailError = '';
+    this.passwordError = '';
+
+    // 🔹 Validar antes de enviar la solicitud al backend
+    if (!this.isValidName(this.user.firstname)) {
+      this.firstnameError = 'El nombre debe tener al menos 5 caracteres.';
+    }
+    if (!this.isValidName(this.user.lastname)) {
+      this.lastnameError = 'El apellido debe tener al menos 5 caracteres.';
+    }
+    if (!this.isValidEmail(this.user.email)) {
+      this.emailError = 'El correo electrónico no es válido.';
+    }
+    if (!this.isValidName(this.user.password)) {
+      this.passwordError = 'La contraseña debe tener al menos 5 caracteres.';
+    }
+
+    // Si hay errores, no se envía el formulario
+    if (this.firstnameError || this.lastnameError || this.emailError || this.passwordError) {
+      return;
+    }
+
     this.isSubmitting = true;
     
     this.authService.register(this.user).subscribe({
       next: response => {
         console.log('Registro exitoso:', response);
-        this.successMessage = '¡Registro exitoso! Redirigiendo...';
-        this.authService.handleLoginSuccess(response.token);
         this.isSubmitting = false;
       },
       error: (error: HttpErrorResponse) => {
         this.isSubmitting = false;
-        if (error.status === 409) {
-          this.errorMessage = 'Este email ya está registrado. Por favor, usa otro.';
-        } else if (error.status === 400) {
-          this.errorMessage = 'Datos de registro inválidos. Por favor verifica la información.';
-        } else if (error.status === 403) {
-          this.errorMessage = 'No tienes permiso para registrarte. Contacta al administrador.';
-        } else {
-          this.errorMessage = 'Error en el registro. Por favor, inténtalo más tarde.';
-        }
         console.error('Error en el registro:', error);
       }
     });

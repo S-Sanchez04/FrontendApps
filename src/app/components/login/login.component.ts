@@ -13,17 +13,35 @@ import { Router } from '@angular/router';
 })
 export class LoginComponent {
   credentials = { email: '', password: '' };
+  errorMessages = { email: '', password: '', general: '' };
 
   constructor(private authService: AuthService, private router: Router) {}
 
   login() {
+    this.errorMessages = { email: '', password: '', general: '' };
+
+    if (!this.credentials.email) {
+      this.errorMessages.email = 'El correo electrónico es obligatorio.';
+    }
+    if (!this.credentials.password) {
+      this.errorMessages.password = 'La contraseña es obligatoria.';
+    }
+    if (this.errorMessages.email || this.errorMessages.password) {
+      return;
+    }
+
     this.authService.login(this.credentials).subscribe({
       next: (response) => {
-        localStorage.setItem('token', response.token); 
+        localStorage.setItem('token', response.token);
         this.authService.handleLoginSuccess(response.token);
+        this.router.navigate(['/home']);
       },
       error: (error) => {
-        console.error('Error en el login:', error);
+        if (error.status === 403) {
+          this.errorMessages.general = 'Usuario o contraseña incorrectos.';
+        } else {
+          this.errorMessages.general = 'Error en el servidor. Intente nuevamente.';
+        }
       }
     });
   }
